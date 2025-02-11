@@ -1,13 +1,28 @@
-import React from "react";
+import React, { use } from "react";
 import { Button } from "./ui/button";
 import { PenBox, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 // import { checkUser } from "@/lib/checkUser";
 import Image from "next/image";
+import { currentUser } from "@clerk/nextjs/server";
 
 const Header = async () => {
-  // await checkUser();
+  const checkUser = async () => {
+    const user = await currentUser();
+  
+    if (!user) return null;
+  
+    const token = user.id; // Clerk ID to send in API
+  
+    const res = await fetch("http://localhost:5000/auth/check-user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // Send Clerk ID as token
+      },
+    });
+  }
 
   return (
     <header className="fixed top-0 w-screen bg-white/80 backdrop-blur-md z-50 border-b ">
