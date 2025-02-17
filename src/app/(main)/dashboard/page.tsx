@@ -1,13 +1,13 @@
 import { Suspense } from "react";
-import { getUserAccounts } from "@/actions/dashboard";
-import { getDashboardData } from "@/actions/dashboard";
-import { getCurrentBudget } from "@/actions/budget";
-import { AccountCard } from "./_components/account-card";
+import { getUserAccounts } from "../../../../actions/dashboard";
+import { getDashboardData } from "../../../../actions/dashboard";
+import { getCurrentBudget } from "../../../..//actions/budget";
+import { AccountCard } from "./_components/accounts-card";
 import { CreateAccountDrawer } from "@/components/create-account-drawer";
-import { BudgetProgress } from "./_components/budget-progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { DashboardOverview } from "./_components/transaction-overview";
+import { BudgetProgress } from "./_components/budget-progress";
   const Dashboard =async() => {
   const [accounts, transactions] = await Promise.all([
     getUserAccounts(),
@@ -46,7 +46,7 @@ import { DashboardOverview } from "./_components/transaction-overview";
             </CardContent>
           </Card>
         </CreateAccountDrawer>
-        {accounts.length > 0 &&
+        {Array.isArray(accounts)&& accounts.length > 0 &&
           accounts?.map((account) => (
             <AccountCard key={account.id} account={account} />
           ))}
