@@ -1,7 +1,5 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { db } from "./prisma";
-// import { db } from "./prisma";
-
 
 export const checkUser = async () => {
   const user = await currentUser();
@@ -34,7 +32,6 @@ export const checkUser = async () => {
 
     return newUser;
   } catch (error:any) {
-	// console.log("error ", error);
     console.log(error.message);
   }
 };

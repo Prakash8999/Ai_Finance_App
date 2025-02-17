@@ -1,4 +1,3 @@
-'use server'
 import React, { use } from "react";
 import { Button } from "./ui/button";
 import { PenBox, LayoutDashboard } from "lucide-react";
