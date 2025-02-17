@@ -32,7 +32,7 @@ import { BudgetProgress } from "./_components/budget-progress";
 
       {/* Dashboard Overview */}
       <DashboardOverview
-        accounts={accounts}
+        accounts={accounts || []}
         transactions={transactions || []}
       />
 

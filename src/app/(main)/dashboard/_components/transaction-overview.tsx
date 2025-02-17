@@ -22,6 +22,27 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
+interface Account {
+  id: string;
+  name: string;
+  isDefault?: boolean;
+}
+
+interface Transaction {
+  id: string;
+  accountId: string;
+  description?: string;
+  amount: number;
+  date: string;
+  type: "EXPENSE" | "INCOME";
+  category: string;
+}
+
+interface DashboardOverviewProps {
+  accounts: Account[];
+  transactions: Transaction[];
+}
+
 const COLORS = [
   "#FF6B6B",
   "#4ECDC4",
@@ -32,7 +53,7 @@ const COLORS = [
   "#9FA8DA",
 ];
 
-export function DashboardOverview({ accounts, transactions }) {
+export function DashboardOverview({ accounts, transactions }: DashboardOverviewProps) {
   const [selectedAccountId, setSelectedAccountId] = useState(
     accounts.find((a) => a.isDefault)?.id || accounts[0]?.id
   );
@@ -44,7 +65,7 @@ export function DashboardOverview({ accounts, transactions }) {
 
   // Get recent transactions (last 5)
   const recentTransactions = accountTransactions
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 5);
 
   // Calculate expense breakdown for current month
@@ -59,14 +80,11 @@ export function DashboardOverview({ accounts, transactions }) {
   });
 
   // Group expenses by category
-  const expensesByCategory = currentMonthExpenses.reduce((acc, transaction) => {
+  const expensesByCategory: Record<string, number> = currentMonthExpenses.reduce((acc, transaction) => {
     const category = transaction.category;
-    if (!acc[category]) {
-      acc[category] = 0;
-    }
-    acc[category] += transaction.amount;
+    acc[category] = (acc[category] || 0) + transaction.amount;
     return acc;
-  }, {});
+  }, {} as Record<string, number>);
 
   // Format data for pie chart
   const pieChartData = Object.entries(expensesByCategory).map(
@@ -81,13 +99,8 @@ export function DashboardOverview({ accounts, transactions }) {
       {/* Recent Transactions Card */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="text-base font-normal">
-            Recent Transactions
-          </CardTitle>
-          <Select
-            value={selectedAccountId}
-            onValueChange={setSelectedAccountId}
-          >
+          <CardTitle className="text-base font-normal">Recent Transactions</CardTitle>
+          <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Select account" />
             </SelectTrigger>
@@ -108,10 +121,7 @@ export function DashboardOverview({ accounts, transactions }) {
               </p>
             ) : (
               recentTransactions.map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="flex items-center justify-between"
-                >
+                <div key={transaction.id} className="flex items-center justify-between">
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none">
                       {transaction.description || "Untitled Transaction"}
@@ -124,9 +134,7 @@ export function DashboardOverview({ accounts, transactions }) {
                     <div
                       className={cn(
                         "flex items-center",
-                        transaction.type === "EXPENSE"
-                          ? "text-red-500"
-                          : "text-green-500"
+                        transaction.type === "EXPENSE" ? "text-red-500" : "text-green-500"
                       )}
                     >
                       {transaction.type === "EXPENSE" ? (
@@ -147,15 +155,11 @@ export function DashboardOverview({ accounts, transactions }) {
       {/* Expense Breakdown Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base font-normal">
-            Monthly Expense Breakdown
-          </CardTitle>
+          <CardTitle className="text-base font-normal">Monthly Expense Breakdown</CardTitle>
         </CardHeader>
         <CardContent className="p-0 pb-5">
           {pieChartData.length === 0 ? (
-            <p className="text-center text-muted-foreground py-4">
-              No expenses this month
-            </p>
+            <p className="text-center text-muted-foreground py-4">No expenses this month</p>
           ) : (
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -170,14 +174,11 @@ export function DashboardOverview({ accounts, transactions }) {
                     label={({ name, value }) => `${name}: $${value.toFixed(2)}`}
                   >
                     {pieChartData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value) => `$${value.toFixed(2)}`}
+                    formatter={(value:number) => `$${value.toFixed(2)}`}
                     contentStyle={{
                       backgroundColor: "hsl(var(--popover))",
                       border: "1px solid hsl(var(--border))",
