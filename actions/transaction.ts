@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import aj from "@/lib/arcjet";
+// import aj from "@/lib/arcjet";
 import { request } from "@arcjet/next";
 import { NextRequest } from "next/server";
 
@@ -21,38 +21,38 @@ export async function createTransaction(id:string, data:any) {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
-    const req = await request();
-	const arcjetReq = {
-		getBody: async () => (req.body ? JSON.stringify(req.body) : undefined), 
-		headers: req.headers,
-		socket: req.socket,
-		method: req.method,
-		body: req.body ? JSON.stringify(req.body) : undefined, 
-	  };
+  //   const req = await request();
+	// const arcjetReq = {
+	// 	getBody: async () => (req.body ? JSON.stringify(req.body) : undefined), 
+	// 	headers: req.headers,
+	// 	socket: req.socket,
+	// 	method: req.method,
+	// 	body: req.body ? JSON.stringify(req.body) : undefined, 
+	//   };
 	  
-	  // Pass `arcjetReq` to ArcJet's protect method
-	  const decision = await aj.protect(arcjetReq, {
-		userId,
-		requested: 1, 
-	  });
+	//   // Pass `arcjetReq` to ArcJet's protect method
+	//   const decision = await aj.protect(arcjetReq, {
+	// 	userId,
+	// 	requested: 1, 
+	//   });
 	  
 
-    if (decision.isDenied()) {
-      if (decision.reason.isRateLimit()) {
-        const { remaining, reset } = decision.reason;
-        console.error({
-          code: "RATE_LIMIT_EXCEEDED",
-          details: {
-            remaining,
-            resetInSeconds: reset,
-          },
-        });
+  //   if (decision.isDenied()) {
+  //     if (decision.reason.isRateLimit()) {
+  //       const { remaining, reset } = decision.reason;
+  //       console.error({
+  //         code: "RATE_LIMIT_EXCEEDED",
+  //         details: {
+  //           remaining,
+  //           resetInSeconds: reset,
+  //         },
+  //       });
 
-        throw new Error("Too many requests. Please try again later.");
-      }
+  //       throw new Error("Too many requests. Please try again later.");
+  //     }
 
-      throw new Error("Request blocked");
-    }
+  //     throw new Error("Request blocked");
+  //   }
 
     const user = await db.user.findUnique({
       where: { clerkUserId: userId },

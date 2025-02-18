@@ -16,10 +16,10 @@ await checkUser()
         <Link href="/">
           <Image
             src={"/logo.png"}
-            alt="Welth Logo"
+            alt="Wealix Logo"
             width={200}
-            height={60}
-            className="h-12 w-auto object-contain"
+            height={200}
+            className="h-12 w-auto object-contain rounded-full "
           />
         </Link>
 

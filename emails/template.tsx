@@ -88,7 +88,7 @@ import {
 			  {/* AI Insights */}
 			  {reportData?.insights && (
 				<Section style={styles.section}>
-				  <Heading style={styles.heading}>Welth Insights</Heading>
+				  <Heading style={styles.heading}>Wealix Insights</Heading>
 				  {reportData.insights.map((insight, index) => (
 					<Text key={index} style={styles.text}>
 					  • {insight}
@@ -98,7 +98,7 @@ import {
 			  )}
   
 			  <Text style={styles.footer}>
-				Thank you for using Welth. Keep tracking your finances for better
+				Thank you for using Wealix. Keep tracking your finances for better
 				financial health!
 			  </Text>
 			</Container>
