@@ -1,11 +1,11 @@
-import React, { use } from "react";
+import React from "react";
 import { Button } from "./ui/button";
 import { PenBox, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 // import { checkUser } from "@/lib/checkUser";
 import Image from "next/image";
-import { currentUser } from "@clerk/nextjs/server";
+// import { currentUser } from "@clerk/nextjs/server";
 import { checkUser } from "@/lib/checkuser";
 
 const Header = async () => {

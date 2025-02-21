@@ -29,13 +29,13 @@ import { CreateAccountDrawer } from "@/components/create-account-drawer";
 import { cn } from "@/lib/utils";
 import { createTransaction, updateTransaction } from "../../../../../actions/transaction";
 import { transactionSchema } from "@/app/lib/schema";
-import { Account } from "../../account/[id]/page";
+// import { Account } from "../../account/[id]/page";
 import { ReceiptScanner } from "./receipt-scanner";
-import { FieldErrors } from "react-hook-form";
+// import { FieldErrors } from "react-hook-form";
 import { z } from "zod";
 
 type FormSchema = z.infer<typeof transactionSchema>; // Infer schema type from zod
-type FormErrors = FieldErrors<FormSchema>;
+// type FormErrors = FieldErrors<FormSchema>;
 export interface ScannedData {
 	amount: number;
 	date: Date; // Assuming the date is a string in the scanned data
