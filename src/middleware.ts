@@ -1,9 +1,9 @@
 // import arcjet, { createMiddleware, detectBot, shield } from "@arcjet/next";
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-if (!process.env.ARCJET_KEY) {
-  throw new Error("ARCJET_KEY is not defined in environment variables.");
-}
+// if (!process.env.ARCJET_KEY) {
+//   throw new Error("ARCJET_KEY is not defined in environment variables.");
+// }
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
   "/account(.*)",

@@ -21,22 +21,9 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { Account, Transaction } from "@/types/type";
 
-interface Account {
-  id: string;
-  name: string;
-  isDefault?: boolean;
-}
 
-interface Transaction {
-  id: string;
-  accountId: string;
-  description?: string;
-  amount: number;
-  date: string;
-  type: "EXPENSE" | "INCOME";
-  category: string;
-}
 
 interface DashboardOverviewProps {
   accounts: Account[];

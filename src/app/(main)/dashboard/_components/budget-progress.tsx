@@ -1,4 +1,4 @@
-	"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { Pencil, Check, X } from "lucide-react";
@@ -16,8 +16,12 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { updateBudget } from "../../../../../actions/budget";
+import { InitialBudget } from "@/types/type";
 
-export function BudgetProgress({ initialBudget, currentExpenses }:{initialBudget:any,currentExpenses:number}) {
+
+
+
+export function BudgetProgress({ initialBudget, currentExpenses }: { initialBudget: InitialBudget | null | undefined, currentExpenses: number }) {
   const [isEditing, setIsEditing] = useState(false);
   const [newBudget, setNewBudget] = useState(
     initialBudget?.amount?.toString() || ""
@@ -104,8 +108,8 @@ export function BudgetProgress({ initialBudget, currentExpenses }:{initialBudget
                 <CardDescription>
                   {initialBudget
                     ? `$${currentExpenses.toFixed(
-                        2
-                      )} of $${initialBudget.amount.toFixed(2)} spent`
+                      2
+                    )} of $${initialBudget.amount.toFixed(2)} spent`
                     : "No budget set"}
                 </CardDescription>
                 <Button
@@ -133,7 +137,7 @@ export function BudgetProgress({ initialBudget, currentExpenses }:{initialBudget
                   : percentUsed >= 75
                     ? "bg-yellow-500"
                     : "bg-green-500"
-              }`}
+                }`}
             />
             <p className="text-xs text-muted-foreground text-right">
               {percentUsed.toFixed(1)}% used

@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import useFetch from "@/hooks/use-fetch";
 import { scanReceipt } from "../../../../../actions/transaction";
-import { ScannedData } from "./transaction-form";
+import { ScannedData } from "@/types/type";
 interface ReceiptScannerProps {
 	onScanComplete: (scannedData: ScannedData) => void;
   }
 export function ReceiptScanner({ onScanComplete }: ReceiptScannerProps) {
 	const fileInputRef = useRef<HTMLInputElement>(null);
+  // const hasScannedRef = useRef(false);
 
   const {
     loading: scanReceiptLoading,
@@ -32,8 +33,10 @@ export function ReceiptScanner({ onScanComplete }: ReceiptScannerProps) {
     if (scannedData && !scanReceiptLoading) {
       onScanComplete(scannedData);
       toast.success("Receipt scanned successfully");
+      // hasScannedRef.current = true; // Prevent further calls
+
     }
-  }, [scanReceiptLoading, scannedData]);
+  }, [scanReceiptLoading, scannedData, onScanComplete]);
 
   return (
     <div className="flex items-center gap-4">

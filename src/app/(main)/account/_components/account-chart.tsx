@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Transaction } from "../[id]/page";
+import { GroupedTransaction, Transaction } from "@/types/type";
 
 interface TransactionTableProps {
 	transactions: Transaction[];
@@ -34,11 +34,7 @@ const DATE_RANGES:  Record<string, { label: string; days: number | null }> = {
   ALL: { label: "All Time", days: null },
 };
 
-interface GroupedTransaction {
-	date: string;
-	income: number;
-	expense: number;
-  }
+
 export function AccountChart({ transactions }: TransactionTableProps) {
 	const [dateRange, setDateRange] = useState<keyof typeof DATE_RANGES>("1M");
 

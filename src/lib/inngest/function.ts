@@ -5,33 +5,43 @@ import { db } from "@/lib/prisma";
 // import EmailTemplate from "@/emails/template";
 // import { sendEmail } from "@/actions/send-email";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-enum TransactionInterval { 
-	DAILY = "DAILY",
-	WEEKLY= "WEEKLY",
-	MONTHLY= "MONTHLY" ,
-	YEARLY = "YEARLY",
+enum TransactionInterval {
+  DAILY = "DAILY",
+  WEEKLY = "WEEKLY",
+  MONTHLY = "MONTHLY",
+  YEARLY = "YEARLY",
 
 }
 export enum TransactionType {
-	INCOME = "INCOME",
-	EXPENSE = "EXPENSE",
-  }
-  interface Stats {
-    totalExpenses: number;
-    totalIncome: number;
-    byCategory: Record<string, number>; // Fix for the indexing error
-    transactionCount: number;
-  };
+  INCOME = "INCOME",
+  EXPENSE = "EXPENSE",
+}
+interface Stats {
+  totalExpenses: number;
+  totalIncome: number;
+  byCategory: Record<string, number>; // Fix for the indexing error
+  transactionCount: number;
+};
 export interface Transaction {
-	
-	category: string;
-	receiptUrl?: string;
-	isRecurring: boolean;
-	recurringInterval?: TransactionInterval;
-	nextRecurringDate?: Date;
-	lastProcessed?: Date;
+  id: string;
+  type: TransactionType;
+  amount: number;
+  description?: string;
+  date: Date;
+  category: string;
+  receiptUrl?: string | null;
+  isRecurring: boolean;
+  recurringInterval?: TransactionInterval | null; // ✅ Allow null
+  nextRecurringDate: Date;
+  lastProcessed?: Date;
+  userId: string;
+  accountId: string;
+  account: Account;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-  }
+
 // 1. Recurring Transaction Processing with Throttling
 export const processRecurringTransaction = inngest.createFunction(
   {
@@ -61,8 +71,8 @@ export const processRecurringTransaction = inngest.createFunction(
           account: true,
         },
       });
-
-      if (!transaction || !isTransactionDue(transaction)) return;
+// @ts-ignore
+      if (!transaction || !isTransactionDue(transaction )) return;
 
       // Create new transaction and update account balance in a transaction
       await db.$transaction(async (tx) => {
@@ -154,7 +164,7 @@ export const triggerRecurringTransactions = inngest.createFunction(
 );
 
 // // 2. Monthly Report Generation
-async function generateFinancialInsights(stats:Stats, month:string) {
+async function generateFinancialInsights(stats: Stats, month: string) {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -241,120 +251,123 @@ export const generateMonthlyReports = inngest.createFunction(
 // 3. Budget Alerts with Event Batching
 
 interface User {
-	id: string;
-	name: string;
-	email: string;
-	accounts: Account[];
+  id: string;
+  name: string;
+  email: string;
+  accounts: Account[];
 }
 
 interface Account {
-	id: string;
-	name: string;
-	isDefault: boolean;
+  id: string;
+  name: string;
+  isDefault: boolean;
 }
 
 interface Budget {
-	id: string;
-	userId: string;
-	amount: number;
-	lastAlertSent: Date | null;
-	user: User;
+  id: string;
+  userId: string;
+  amount: number;
+  lastAlertSent: Date | null;
+  user: User;
 }
 
 export const checkBudgetAlerts = inngest.createFunction(
-	{
-		name: "Check Budget Alerts", id: "check-budget-alerts", // Unique identifier for the function
-	},
-	{ cron: "0 */6 * * *" }, // Every 6 hours
-	async ({ step }: { step: any }) => {
-		const budgets: Budget[] = await step.run("fetch-budgets", async () => {
-			return await db.budget.findMany({
-				include: {
-					user: {
-						include: {
-							accounts: {
-								where: { isDefault: true },
-							},
-						},
-					},
-				},
-			});
-		});
+  {
+    name: "Check Budget Alerts", id: "check-budget-alerts", // Unique identifier for the function
+  },
+  { cron: "0 */6 * * *" }, // Every 6 hours
+  async ({ step }: { step: any }) => {
+    const budgets: Budget[] = await step.run("fetch-budgets", async () => {
+      return await db.budget.findMany({
+        include: {
+          user: {
+            include: {
+              accounts: {
+                where: { isDefault: true },
+              },
+            },
+          },
+        },
+      });
+    });
 
-		for (const budget of budgets) {
-			const defaultAccount = budget.user.accounts[0];
-			if (!defaultAccount) continue; // Skip if no default account
+    for (const budget of budgets) {
+      const defaultAccount = budget.user.accounts[0];
+      if (!defaultAccount) continue; // Skip if no default account
 
-			await step.run(`check-budget-${budget.id}`, async () => {
-				const startDate = new Date();
-				startDate.setDate(1); // Start of current month
+      await step.run(`check-budget-${budget.id}`, async () => {
+        const startDate = new Date();
+        startDate.setDate(1); // Start of current month
 
-				// Calculate total expenses for the default account only
-				const expenses = await db.transaction.aggregate({
-					where: {
-						userId: budget.userId,
-						accountId: defaultAccount.id, // Only consider default account
-						type: "EXPENSE",
-						date: { gte: startDate },
-					},
-					_sum: { amount: true },
-				});
+        // Calculate total expenses for the default account only
+        const expenses = await db.transaction.aggregate({
+          where: {
+            userId: budget.userId,
+            accountId: defaultAccount.id, // Only consider default account
+            type: "EXPENSE",
+            date: { gte: startDate },
+          },
+          _sum: { amount: true },
+        });
 
-				const totalExpenses = expenses._sum.amount?.toNumber() || 0;
-				const budgetAmount = Number(budget.amount);
-				const percentageUsed = (totalExpenses / budgetAmount) * 100;
+        const totalExpenses = expenses._sum.amount?.toNumber() || 0;
+        const budgetAmount = Number(budget.amount);
+        const percentageUsed = (totalExpenses / budgetAmount) * 100;
 
-				// Check if we should send an alert
-				if (
-					percentageUsed >= 80 && // Default threshold of 80%
-					(!budget.lastAlertSent || isNewMonth(new Date(budget.lastAlertSent), new Date()))
-				) {
-					await sendEmail({
-						to: budget.user.email,
-						subject: `Budget Alert for ${defaultAccount.name}`,
-						react: EmailTemplate({
-							userName: budget.user.name,
-							type: "budget-alert",
-							data: {
-								percentageUsed,
-								budgetAmount: parseFloat(budgetAmount.toFixed(1)), // Convert back to number
-								totalExpenses: parseFloat(totalExpenses.toFixed(1)),
-								accountName: defaultAccount.name,
-							},
-						}),
-					});
+        // Check if we should send an alert
+        if (
+          percentageUsed >= 80 && // Default threshold of 80%
+          (!budget.lastAlertSent || isNewMonth(new Date(budget.lastAlertSent), new Date()))
+        ) {
+          await sendEmail({
+            to: budget.user.email,
+            subject: `Budget Alert for ${defaultAccount.name}`,
+            react: EmailTemplate({
+              userName: budget.user.name,
+              type: "budget-alert",
+              data: {
+                percentageUsed,
+                budgetAmount: parseFloat(budgetAmount.toFixed(1)), // Convert back to number
+                totalExpenses: parseFloat(totalExpenses.toFixed(1)),
+                accountName: defaultAccount.name,
+              },
+            }),
+          });
 
-					// Update last alert sent
-					await db.budget.update({
-						where: { id: budget.id },
-						data: { lastAlertSent: new Date() },
-					});
-				}
-			});
-		}
-	}
+          // Update last alert sent
+          await db.budget.update({
+            where: { id: budget.id },
+            data: { lastAlertSent: new Date() },
+          });
+        }
+      });
+    }
+  }
 );
 
 function isNewMonth(lastAlertDate: Date, currentDate: Date): boolean {
-	return (
-		lastAlertDate.getMonth() !== currentDate.getMonth() ||
-		lastAlertDate.getFullYear() !== currentDate.getFullYear()
-	);
+  return (
+    lastAlertDate.getMonth() !== currentDate.getMonth() ||
+    lastAlertDate.getFullYear() !== currentDate.getFullYear()
+  );
+}
+interface TransactionTableProps {
+  transactions: Transaction;
 }
 
 // // Utility functions
-function isTransactionDue(transaction: any) {
+function isTransactionDue(transaction: Transaction) {
   // If no lastProcessed date, transaction is due
   if (!transaction.lastProcessed) return true;
 
   const today = new Date();
-  const nextDue = new Date(transaction.nextRecurringDate);
+  const nextDue = new Date(transaction?.nextRecurringDate);
 
   // Compare with nextDue date
   return nextDue <= today;
 }
 
-function calculateNextRecurringDate(date:Date, interval: TransactionInterval) {
+function calculateNextRecurringDate(date: Date, interval: TransactionInterval) {
   const next = new Date(date);
   switch (interval) {
     case "DAILY":
@@ -387,7 +400,7 @@ async function getMonthlyStats(userId: string, month: Date) {
     },
   });
 
-  
+
 
   return transactions.reduce<Stats>(
     (stats, t) => {

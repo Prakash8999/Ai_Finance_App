@@ -31,7 +31,9 @@ export const checkUser = async () => {
     });
 
     return newUser;
-  } catch (error:any) {
-    console.log(error.message);
+  } catch (error) {
+    console.log(error);
+    throw new Error('Failed to fetch user.');
+
   }
 };

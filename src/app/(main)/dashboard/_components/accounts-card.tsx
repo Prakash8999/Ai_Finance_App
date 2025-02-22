@@ -14,21 +14,13 @@ import {
 import Link from "next/link";
 import { updateDefaultAccount } from "../../../../../actions/accounts";
 import { toast } from "sonner";
+import { AccountProps } from "@/types/type";
 
 // Define AccountType as an enum
-enum AccountType {
-  CURRENT = "CURRENT",
-  SAVINGS = "SAVINGS",
-}
+
 
 // Define AccountProps interface
-interface AccountProps {
-  name: string;
-  type: AccountType;
-  balance: number;
-  id: string;
-  isDefault: boolean;
-}
+
 
 // Define component props interface
 interface AccountCardProps {

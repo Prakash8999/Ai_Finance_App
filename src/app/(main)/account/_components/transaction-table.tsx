@@ -54,7 +54,7 @@ import { bulkDeleteTransactions } from "../../../../../actions/accounts";
 import useFetch from "@/hooks/use-fetch";
 import { BarLoader } from "react-spinners";
 import { useRouter } from "next/navigation";
-import { Transaction } from "../[id]/page";
+import { Transaction } from "@/types/type";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -106,7 +106,7 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
 		}
 
 		// Apply sorting
-		result.sort((a: any, b: any) => {
+		result.sort((a, b) => {
 			let comparison = 0;
 
 			switch (sortConfig.field) {

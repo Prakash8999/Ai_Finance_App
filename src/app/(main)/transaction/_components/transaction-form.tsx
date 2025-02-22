@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon, Loader2 } from "lucide-react";
@@ -33,30 +33,26 @@ import { transactionSchema } from "@/app/lib/schema";
 import { ReceiptScanner } from "./receipt-scanner";
 // import { FieldErrors } from "react-hook-form";
 import { z } from "zod";
+import { Category } from "@/data/categories";
+import { Account, InitialData, ScannedData } from "@/types/type";
 
 type FormSchema = z.infer<typeof transactionSchema>; // Infer schema type from zod
 // type FormErrors = FieldErrors<FormSchema>;
-export interface ScannedData {
-	amount: number;
-	date: Date; // Assuming the date is a string in the scanned data
-	description?: string;
-	category?: string;
-  }
-  
+
 export function AddTransactionForm({
 	accounts,
 	categories,
-	editMode = false,
-	initialData = null,
+	editMode ,
+	initialData ,
 }: {
-accounts: any,
-categories: any[],
-editMode: boolean,
-initialData: any,
-	}) {
+	accounts: Account[],
+	categories: Category[],
+	editMode: boolean,
+	initialData?: InitialData,
+}) {
 	const router = useRouter();
 	const searchParams = useSearchParams();
-	const editId = searchParams.get("edit") ;
+	const editId = searchParams.get("edit");
 
 	const {
 		register,
@@ -86,7 +82,7 @@ initialData: any,
 					type: "EXPENSE",
 					amount: "",
 					description: "",
-					accountId: accounts.find((ac: any) => ac.isDefault)?.id,
+					accountId: accounts.find((ac) => ac.isDefault)?.id,
 					date: new Date(),
 					isRecurring: false,
 				},
@@ -98,7 +94,7 @@ initialData: any,
 		data: transactionResult,
 	} = useFetch(editMode ? updateTransaction : createTransaction);
 
-	const onSubmit = (data:any) => {
+	const onSubmit = (data: any) => {
 		const formData = {
 			...data,
 			amount: parseFloat(data.amount),
@@ -111,7 +107,20 @@ initialData: any,
 		}
 	};
 
-	const handleScanComplete = (scannedData: ScannedData) => {
+	// const handleScanComplete = (scannedData: ScannedData) => {
+	// 	if (scannedData) {
+	// 		setValue("amount", scannedData.amount.toString());
+	// 		setValue("date", new Date(scannedData.date));
+	// 		if (scannedData.description) {
+	// 			setValue("description", scannedData.description);
+	// 		}
+	// 		if (scannedData.category) {
+	// 			setValue("category", scannedData.category);
+	// 		}
+	// 		toast.success("Receipt scanned successfully");
+	// 	}
+	// }
+	const handleScanComplete =useCallback( (scannedData: ScannedData) => {
 		if (scannedData) {
 			setValue("amount", scannedData.amount.toString());
 			setValue("date", new Date(scannedData.date));
@@ -123,7 +132,7 @@ initialData: any,
 			}
 			toast.success("Receipt scanned successfully");
 		}
-	};
+	},[setValue] )
 
 	useEffect(() => {
 		if (transactionResult?.success && !transactionLoading) {
@@ -135,7 +144,7 @@ initialData: any,
 			reset();
 			router.push(`/account/${transactionResult.data.accountId}`);
 		}
-	}, [transactionResult, transactionLoading, editMode]);
+	}, [transactionResult, transactionLoading, editMode,reset,router]);
 
 	const type = watch("type");
 	const isRecurring = watch("isRecurring");
@@ -144,7 +153,8 @@ initialData: any,
 	const filteredCategories = categories.filter(
 		(category) => category.type === type
 	);
-	
+
+
 	return (
 		<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 			{/* Receipt Scanner - Only show in create mode */}
@@ -195,7 +205,7 @@ initialData: any,
 							<SelectValue placeholder="Select account" />
 						</SelectTrigger>
 						<SelectContent>
-							{accounts.map((account:any) => (
+							{accounts.map((account: any) => (
 								<SelectItem key={account.id} value={account.id}>
 									{account.name} (${account.balance.toFixed(2)})
 								</SelectItem>
@@ -259,7 +269,7 @@ initialData: any,
 						<Calendar
 							mode="single"
 							selected={date}
-							onSelect={(date) =>{if(date) setValue("date", date)}}
+							onSelect={(date) => { if (date) setValue("date", date) }}
 							disabled={(date) =>
 								date > new Date() || date < new Date("1900-01-01")
 							}

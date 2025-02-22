@@ -4,56 +4,35 @@ import { BarLoader } from "react-spinners";
 import { TransactionTable } from "../_components/transaction-table";
 import { notFound } from "next/navigation";
 import { AccountChart } from "../_components/account-chart";
-interface AccountPageProps {
-	params: { id: string };
-  }
-  export interface Account {
-	id: string;
-	name: string;
-	type: string;
-	balance: number;
-	_count: {
-	  transactions: number;
-	};
-  }
-  export enum TransactionType {
-	INCOME = "INCOME",
-	EXPENSE = "EXPENSE",
-  }
+import { Account, Transaction } from "@/types/type";
+
+  type Params = Promise<{ id: string }>
+
+
+  // export enum TransactionType {
+	// "INCOME",
+	// "EXPENSE",
+  // }
   
-  export enum RecurringInterval {
-	DAILY = "DAILY",
-	WEEKLY = "WEEKLY",
-	MONTHLY = "MONTHLY",
-	YEARLY = "YEARLY",
-  }
+  // export enum RecurringInterval {
+	// DAILY = "DAILY",
+	// WEEKLY = "WEEKLY",
+	// MONTHLY = "MONTHLY",
+	// YEARLY = "YEARLY",
+  // }
   
-  export enum TransactionStatus {
-	PENDING = "PENDING",
-	COMPLETED = "COMPLETED",
-	FAILED = "FAILED",
-  }
-  export interface Transaction {
-	id: string;
-	type: TransactionType;
-	amount: number;
-	description?: string;
-	date: Date;
-	category: string;
-	receiptUrl?: string;
-	isRecurring: boolean;
-	recurringInterval?: RecurringInterval ;
-	nextRecurringDate?: Date;
-	lastProcessed?: Date;
-	status: TransactionStatus;
-	userId: string;
-	accountId: string;
-	createdAt: Date;
-	updatedAt: Date;
-  }
-export default async function AccountPage({ params }: AccountPageProps) {
+  // export enum TransactionStatus {
+	// PENDING = "PENDING",
+	// COMPLETED = "COMPLETED",
+	// FAILED = "FAILED",
+  // }
+
+export default async function AccountPage({ params }: {params:Params}) {
+
+const {id} = await params;
+
 	const accountData: { transactions: Transaction[] } & Account | null =
-    await getAccountWithTransactions(params.id);
+    await getAccountWithTransactions(id);
 
   if (!accountData) {
     notFound();
