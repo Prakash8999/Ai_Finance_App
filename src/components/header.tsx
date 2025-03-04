@@ -12,7 +12,7 @@ const Header = async () => {
 await checkUser()
   return (
     <header className="fixed top-0 w-screen bg-white/80 backdrop-blur-md z-50 border-b ">
-      <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <nav className="container mx-auto px-4 py-4 flex items-center justify-between pr-8">
         <Link href="/">
           <Image
             src={"/logo.png"}
@@ -58,8 +58,8 @@ await checkUser()
             </a>
           </SignedIn>
           <SignedOut>
-            <SignInButton forceRedirectUrl="/dashboard">
-              <Button variant="outline">Login</Button>
+            <SignInButton forceRedirectUrl="/dashboard" >
+              <Button variant="default" className="text-xl">Login</Button>
             </SignInButton>
           </SignedOut>
           <SignedIn>

@@ -5,7 +5,7 @@ import { db } from "@/lib/prisma";
 // import EmailTemplate from "@/emails/template";
 // import { sendEmail } from "@/actions/send-email";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-enum TransactionInterval {
+export enum TransactionInterval {
   DAILY = "DAILY",
   WEEKLY = "WEEKLY",
   MONTHLY = "MONTHLY",
@@ -164,7 +164,7 @@ export const triggerRecurringTransactions = inngest.createFunction(
 );
 
 // // 2. Monthly Report Generation
-async function generateFinancialInsights(stats: Stats, month: string) {
+export async function generateFinancialInsights(stats: Stats, month: string) {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -275,12 +275,12 @@ export const checkBudgetAlerts = inngest.createFunction(
   {
     name: "Check Budget Alerts", id: "check-budget-alerts", // Unique identifier for the function
   },
-  { cron: "0 */6 * * *" }, // Every 6 hours
+  { cron: "*/5 * * * *" }, // Every 6 hours
   async ({ step }: { step: any }) => {
     const budgets: Budget[] = await step.run("fetch-budgets", async () => {
       return await db.budget.findMany({
         include: {
-          user: {
+          user: { 
             include: {
               accounts: {
                 where: { isDefault: true },
@@ -367,7 +367,7 @@ function isTransactionDue(transaction: Transaction) {
   return nextDue <= today;
 }
 
-function calculateNextRecurringDate(date: Date, interval: TransactionInterval) {
+export function calculateNextRecurringDate(date: Date, interval: TransactionInterval) {
   const next = new Date(date);
   switch (interval) {
     case "DAILY":
@@ -386,7 +386,7 @@ function calculateNextRecurringDate(date: Date, interval: TransactionInterval) {
   return next;
 }
 
-async function getMonthlyStats(userId: string, month: Date) {
+export async function getMonthlyStats(userId: string, month: Date) {
   const startDate = new Date(month.getFullYear(), month.getMonth(), 1);
   const endDate = new Date(month.getFullYear(), month.getMonth() + 1, 0);
 

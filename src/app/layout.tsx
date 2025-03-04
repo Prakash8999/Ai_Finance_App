@@ -32,13 +32,14 @@ export default function RootLayout({
         </main>
         <Toaster richColors/>
         {/* footer */}
-        <footer className="bg-blue-50 py-12">
+        {/* <footer className="bg-blue-50 py-12">
           <div className="container mx-auto px-4 text-center text-gray-600">
-            {/* <p>
+             <p>
               Made with love by <a href="https://github.com/Prakash8999" target="_blank" >Prakash</a>
-            </p> */}
+            </p> 
           </div>
         </footer>
+         */}
     </body>
     </html>
         </ClerkProvider>
