@@ -1,212 +1,121 @@
-import {
-	Body,
-	Container,
-	Head,
-	Heading,
-	Html,
-	Preview,
-	Section,
-	Text,
-  } from "@react-email/components";
-  
-  interface MonthlyReportData {
-	month: string;
-	stats: {
-	  totalIncome: number;
-	  totalExpenses: number;
-	  byCategory?: Record<string, number>;
-	};
-	insights?: string[];
-  }
-  
-  interface BudgetAlertData {
-	percentageUsed: number;
-	budgetAmount: number;
-	totalExpenses: number;
-	accountName: string,
-  }
-  
-  interface EmailTemplateProps {
-	userName?: string;
-	type: "monthly-report" | "budget-alert";
-	data: MonthlyReportData | BudgetAlertData;
-  }
-  export default function EmailTemplate({
-	userName = "",
-	type = "monthly-report",
-	data ,
-  }:EmailTemplateProps) {
-	if (type === "monthly-report") {
-		const reportData = data as MonthlyReportData; // Type assertion
+"use server";
 
-	  return (
-		<Html>
-		  <Head />
-		  <Preview>Your Monthly Financial Report</Preview>
-		  <Body style={styles.body}>
-			<Container style={styles.container}>
-			  <Heading style={styles.title}>Monthly Financial Report</Heading>
-  
-			  <Text style={styles.text}>Hello {userName},</Text>
-			  <Text style={styles.text}>
-				Here&rsquo;s your financial summary for {reportData?.month}:
-			  </Text>
-  
-			  {/* Main Stats */}
-			  <Section style={styles.statsContainer}>
-				<div style={styles.stat}>
-				  <Text style={styles.text}>Total Income</Text>
-				  <Text style={styles.heading}>${reportData?.stats.totalIncome}</Text>
-				</div>
-				<div style={styles.stat}>
-				  <Text style={styles.text}>Total Expenses</Text>
-				  <Text style={styles.heading}>${reportData?.stats.totalExpenses}</Text>
-				</div>
-				<div style={styles.stat}>
-				  <Text style={styles.text}>Net</Text>
-				  <Text style={styles.heading}>
-					${reportData?.stats.totalIncome - reportData?.stats.totalExpenses}
-				  </Text>
-				</div>
-			  </Section>
-  
-			  {/* Category Breakdown */}
-			  {reportData?.stats?.byCategory && (
-				<Section style={styles.section}>
-				  <Heading style={styles.heading}>Expenses by Category</Heading>
-				  {Object.entries(reportData?.stats.byCategory).map(
-					([category, amount]) => (
-					  <div key={category} style={styles.row}>
-						<Text style={styles.text}>{category}</Text>
-						<Text style={styles.text}>${amount}</Text>
-					  </div>
-					)
-				  )}
-				</Section>
-			  )}
-  
-			  {/* AI Insights */}
-			  {reportData?.insights && (
-				<Section style={styles.section}>
-				  <Heading style={styles.heading}>Wealix Insights</Heading>
-				  {reportData.insights.map((insight, index) => (
-					<Text key={index} style={styles.text}>
-					  • {insight}
-					</Text>
-				  ))}
-				</Section>
-			  )}
-  
-			  <Text style={styles.footer}>
-				Thank you for using Wealix. Keep tracking your finances for better
-				financial health!
-			  </Text>
-			</Container>
-		  </Body>
-		</Html>
-	  );
-	}
-  
-	if (type === "budget-alert") {
-		const budgetData = data as BudgetAlertData; // Type assertion
-
-	  return (
-		<Html>
-		  <Head />
-		  <Preview>Budget Alert</Preview>
-		  <Body style={styles.body}>
-			<Container style={styles.container}>
-			  <Heading style={styles.title}>Budget Alert</Heading>
-			  <Text style={styles.text}>Hello {userName},</Text>
-			  <Text style={styles.text}>
-				You&rsquo;ve used {budgetData?.percentageUsed.toFixed(1)}% of your
-				monthly budget.
-			  </Text>
-			  <Section style={styles.statsContainer}>
-				<div style={styles.stat}>
-				  <Text style={styles.text}>Budget Amount</Text>
-				  <Text style={styles.heading}>${budgetData?.budgetAmount}</Text>
-				</div>
-				<div style={styles.stat}>
-				  <Text style={styles.text}>Spent So Far</Text>
-				  <Text style={styles.heading}>${budgetData?.totalExpenses}</Text>
-				</div>
-				<div style={styles.stat}>
-				  <Text style={styles.text}>Remaining</Text>
-				  <Text style={styles.heading}>
-					${budgetData?.budgetAmount - budgetData?.totalExpenses}
-				  </Text>
-				</div>
-			  </Section>
-			</Container>
-		  </Body>
-		</Html>
-	  );
-	}
-  }
-  
-  const styles: Record<string, React.CSSProperties>  = {
-	body: {
-	  backgroundColor: "#f6f9fc",
-	  fontFamily: "-apple-system, sans-serif",
-	},
-	container: {
-	  backgroundColor: "#ffffff",
-	  margin: "0 auto",
-	  padding: "20px",
-	  borderRadius: "5px",
-	  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-	},
-	title: {
-	  color: "#1f2937",
-	  fontSize: "32px",
-	  fontWeight: "bold",
-	  textAlign: "center" as "center",
-	  margin: "0 0 20px",
-	},
-	heading: {
-	  color: "#1f2937",
-	  fontSize: "20px",
-	  fontWeight: "600",
-	  margin: "0 0 16px",
-	},
-	text: {
-	  color: "#4b5563",
-	  fontSize: "16px",
-	  margin: "0 0 16px",
-	},
-	section: {
-	  marginTop: "32px",
-	  padding: "20px",
-	  backgroundColor: "#f9fafb",
-	  borderRadius: "5px",
-	  border: "1px solid #e5e7eb",
-	},
-	statsContainer: {
-	  margin: "32px 0",
-	  padding: "20px",
-	  backgroundColor: "#f9fafb",
-	  borderRadius: "5px",
-	},
-	stat: {
-	  marginBottom: "16px",
-	  padding: "12px",
-	  backgroundColor: "#fff",
-	  borderRadius: "4px",
-	  boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
-	},
-	row: {
-	  display: "flex",
-	  justifyContent: "space-between",
-	  padding: "12px 0",
-	  borderBottom: "1px solid #e5e7eb",
-	},
-	footer: {
-	  color: "#6b7280",
-	  fontSize: "14px",
-	  textAlign: "center" as "center",
-	  marginTop: "32px",
-	  paddingTop: "16px",
-	  borderTop: "1px solid #e5e7eb",
-	},
+interface MonthlyReportData {
+  month: string;
+  stats: {
+    totalIncome: number;
+    totalExpenses: number;
+    byCategory?: Record<string, number>;
   };
+  insights?: string[];
+}
+
+interface BudgetAlertData {
+  percentageUsed: number;
+  budgetAmount: number;
+  totalExpenses: number;
+  accountName: string;
+}
+
+interface EmailTemplateProps {
+  userName: string;
+  type: "monthly-report" | "budget-alert";
+  data: MonthlyReportData | BudgetAlertData;
+}
+
+export default async function renderEmail(props: EmailTemplateProps): Promise<string> {
+  const { userName, type, data } = props;
+
+  if (type === "monthly-report") {
+    const reportData = data as MonthlyReportData;
+    const totalIncome = reportData.stats.totalIncome.toFixed(2);
+    const totalExpenses = reportData.stats.totalExpenses.toFixed(2);
+    const netAmount = (reportData.stats.totalIncome - reportData.stats.totalExpenses).toFixed(2);
+    
+    return `
+    <html>
+      <body style="font-family: Arial, sans-serif; color: #333; padding: 20px; background-color: #f9f9f9;">
+        <div style="max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
+          <h2 style="color: #007bff; text-align: center;">Monthly Financial Report</h2>
+          <p style="font-size: 16px;">Hello <strong>${userName}</strong>,</p>
+          <p style="font-size: 16px;">Here’s your financial summary for ${reportData.month}:</p>
+
+          <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <tr>
+              <td style="padding: 10px; border-bottom: 1px solid #ddd;"><strong>Total Income:</strong></td>
+              <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">$${totalIncome}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px; border-bottom: 1px solid #ddd;"><strong>Total Expenses:</strong></td>
+              <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">$${totalExpenses}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px;"><strong>Net:</strong></td>
+              <td style="padding: 10px; text-align: right;">$${netAmount}</td>
+            </tr>
+          </table>
+
+          ${reportData.stats.byCategory ? `
+          <h3 style="margin-top: 20px;">Expenses by Category</h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            ${Object.entries(reportData.stats.byCategory)
+              .map(([category, amount]) => `
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #ddd;">${category}</td>
+                  <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">$${amount.toFixed(2)}</td>
+                </tr>
+              `)
+              .join('')}
+          </table>` : ''}
+
+          ${reportData.insights ? `
+          <h3 style="margin-top: 20px;">Wealix Insights</h3>
+          <ul>
+            ${reportData.insights.map(insight => `<li>${insight}</li>`).join('')}
+          </ul>` : ''}
+
+          <p style="font-size: 14px; color: #555; text-align: center; margin-top: 20px;">
+            Thank you for using Wealix. Keep tracking your finances for better financial health!
+          </p>
+        </div>
+      </body>
+    </html>`;
+  }
+
+  if (type === "budget-alert") {
+    const budgetData = data as BudgetAlertData;
+    const budgetAmount = budgetData.budgetAmount.toFixed(2);
+    const totalExpenses = budgetData.totalExpenses.toFixed(2);
+    const percentageUsed = budgetData.percentageUsed.toFixed(2);
+    
+    return `
+    <html>
+      <body style="font-family: Arial, sans-serif; color: #333; padding: 20px; background-color: #f9f9f9;">
+        <div style="max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
+          <h2 style="color: #ff0000; text-align: center;">Budget Alert for ${budgetData.accountName}</h2>
+          <p style="font-size: 16px;">Hello <strong>${userName}</strong>,</p>
+          <p style="font-size: 16px;">Your budget report:</p>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <tr>
+              <td style="padding: 10px; border-bottom: 1px solid #ddd;"><strong>Budget Amount:</strong></td>
+              <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">$${budgetAmount}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px; border-bottom: 1px solid #ddd;"><strong>Total Expenses:</strong></td>
+              <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">$${totalExpenses}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px;"><strong>Percentage Used:</strong></td>
+              <td style="padding: 10px; text-align: right;">${percentageUsed}%</td>
+            </tr>
+          </table>
+          <p style="font-size: 14px; color: #555; text-align: center; margin-top: 20px;">
+            Please monitor your spending to stay within your budget.
+          </p>
+        </div>
+      </body>
+    </html>`;
+  }
+  
+  return "";
+}

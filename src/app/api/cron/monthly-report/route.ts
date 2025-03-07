@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
 	try {
 		const authHeader = req.headers.get("Authorization");
 		if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-		  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 		const users = await db.user.findMany({
 			include: { accounts: true },
@@ -26,18 +26,21 @@ export async function POST(req: NextRequest) {
 			// Generate AI insights
 			const insights = await generateFinancialInsights(stats, monthName);
 
+			const mailData = await EmailTemplate({
+				userName: user.name || '',
+				type: "monthly-report",
+				data: {
+					stats,
+					month: monthName,
+					insights,
+				},
+			})
+
+
 			await sendEmail({
 				to: user.email,
 				subject: `Your Monthly Financial Report - ${monthName}`,
-				react: EmailTemplate({
-					userName: user.name || '',
-					type: "monthly-report",
-					data: {
-						stats,
-						month: monthName,
-						insights,
-					},
-				}),
+				react:mailData ,
 			});
 		};
 

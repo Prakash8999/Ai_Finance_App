@@ -37,21 +37,26 @@ export async function POST(req: NextRequest) {
       const percentageUsed = (totalExpenses / budgetAmount) * 100;
 
       if (percentageUsed >= 80) {
+
+      const mailData =await  EmailTemplate({
+          userName: budget.user.name!,
+          type: "budget-alert",
+          data: {
+          percentageUsed,
+          budgetAmount: parseFloat(budgetAmount.toFixed(1)), // Convert back to number
+          totalExpenses: parseFloat(totalExpenses.toFixed(1)),
+          accountName: defaultAccount.name,
+          },
+        })
+
+        
         await sendEmail({
 					to: budget.user.email,
 					subject: `Budget Alert for ${defaultAccount.name}`,
-					react: EmailTemplate({
-					  userName: budget.user.name!,
-					  type: "budget-alert",
-					  data: {
-						percentageUsed,
-						budgetAmount: parseFloat(budgetAmount.toFixed(1)), // Convert back to number
-						totalExpenses: parseFloat(totalExpenses.toFixed(1)),
-						accountName: defaultAccount.name,
-					  },
-					}),
+					react: mailData
 				  });
-		
+          
+		console.log
 				  // Update last alert sent
 				  await db.budget.update({
 					where: { id: budget.id },
