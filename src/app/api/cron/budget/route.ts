@@ -1,5 +1,5 @@
 import { db } from "@/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { sendEmail } from "../../../../../actions/send-email";
 import EmailTemplate from "../../../../../emails/template";
 
@@ -7,12 +7,20 @@ export async function POST(req: NextRequest) {
   try {
     const authHeader = req.headers.get("Authorization");
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    const response = NextResponse.json({ message: "Budget check started" });
-    // Run the main logic in the background
-    setTimeout(async () => {
+    // Send response instantly so the request doesn't time out
+    const response = new Response(JSON.stringify({ message: "Budget check started" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+
+    // Run in background without being killed by Vercel
+    (async () => {
       try {
         const budgets = await db.budget.findMany({
           include: {
@@ -71,11 +79,14 @@ export async function POST(req: NextRequest) {
       } catch (error) {
         console.error("Error running budget check in background:", error);
       }
-    }, 0); // Runs immediately but after sending response
+    })();
 
     return response;
   } catch (error) {
-    console.error("Error running budget check:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error("Error initializing budget check:", error);
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
