@@ -13,7 +13,12 @@ export async function POST(req: NextRequest) {
 		const users = await db.user.findMany({
 			include: { accounts: true },
 		});
+		const response =NextResponse.json({ message: "Financial Reports Send Successfully", processed: users.length });
 
+
+
+setTimeout(async() => {
+	try {
 		for (const user of users) {
 			const lastMonth = new Date();
 			lastMonth.setMonth(lastMonth.getMonth() - 1);
@@ -43,9 +48,16 @@ export async function POST(req: NextRequest) {
 				react:mailData ,
 			});
 		};
+        console.log("Financial Reports Send Successfully. Total Users: ", users.length);
 
+	} catch (error) {
+		console.error("Error sending financial report in background:", error);
 
-		return NextResponse.json({ message: "Budget check completed", processed: users.length });
+	}
+}, 0);
+		
+
+		return response
 
 	} catch (error) {
 		console.error("Error in monthly report api:", error);
